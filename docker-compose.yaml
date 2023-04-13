@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+
+    mysql:
+        image: mysql:5.7
+        command: --innodb-use-native-aio=0
+        container_name:  mysql
+        restart: always
+        tty: true
+        volumes:
+            - ./mysql:/var/lib/mysql
+        environment:
+            - MYSQL_DATABASE=nodedb
+            - MYSQL_ROOT_PASSWORD=root
+            # MYSQL_USER=root
+        networks:
+            - fullcycle
+
+    node:
+        build:
+            context: ./node
+        image: sueliopontes/fullcycle-docker-node
+        container_name: node
+        volumes:
+            - ./node:/usr/src/app
+        ports:
+            - "3000:3000"
+        networks:
+        - fullcycle
+        depends_on:        
+        - mysql
+
+    nginx:        
+        build:
+            context: ./nginx
+        image: sueliopontes/fullcycle-docker-nginx
+        container_name: nginx
+        ports:
+            - "8080:80"
+        networks:
+        - fullcycle        
+        depends_on:
+        - node        
+
+networks:
+  fullcycle:
+    driver: "bridge"
+
